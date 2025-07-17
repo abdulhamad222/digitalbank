@@ -28,17 +28,16 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white transition-all duration-300 
-      overflow-hidden" style={{ width: isOpen ? '16rem' : '4rem' }}>
-      
+    <div
+      className="flex flex-col h-screen bg-[#3cb0c9] text-white transition-all duration-300 overflow-hidden"
+      style={{ width: isOpen ? '16rem' : '4rem' }}
+    >
       {/* Top Bar */}
-      <div className="flex justify-between items-center p-4 border-b border-gray-700">
-        <span className={`text-xl font-bold ${!isOpen && 'hidden'}`}>
-          Digital Bank
-        </span>
+      <div className="flex justify-between items-center p-4 border-b border-[#3190a5]">
+        <span className={`text-xl font-bold ${!isOpen && 'hidden'}`}>Digital Bank</span>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="text-gray-400 hover:text-white"
+          className="text-white hover:text-gray-100"
         >
           {isOpen ? <X /> : <Menu />}
         </button>
@@ -50,7 +49,7 @@ export default function Sidebar() {
           <Link
             key={label}
             href={href}
-            className="flex items-center space-x-4 px-4 py-2 hover:bg-gray-800 transition"
+            className="flex items-center space-x-4 px-4 py-2 hover:bg-[#3190a5] transition"
           >
             <Icon className="w-5 h-5" />
             {isOpen && <span>{label}</span>}
@@ -59,10 +58,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-[#3190a5]">
         <button
           onClick={signOut}
-          className="w-full flex items-center justify-center space-x-2 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-md"
+          className="w-full flex items-center justify-center space-x-2 bg-white hover:bg-gray-100 text-[#3cb0c9] px-4 py-2 rounded-md font-semibold"
         >
           <LogOut className="w-5 h-5" />
           {isOpen && <span>Logout</span>}

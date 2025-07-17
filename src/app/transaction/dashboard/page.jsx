@@ -25,15 +25,15 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="text-xl font-semibold">Business</div>
+      <div className="text-xl font-semibold text-[#3cb0c9]">Business</div>
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Balance */}
-        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3">
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3 border border-[#3cb0c9]/20">
           <p className="text-gray-500">Total Balance</p>
-          <h2 className="text-2xl font-bold">${capital.toLocaleString()}</h2>
-          <div className="bg-pink-500 text-white p-4 rounded-lg flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-[#3cb0c9]">${capital.toLocaleString()}</h2>
+          <div className="bg-[#3cb0c9] text-white p-4 rounded-lg flex justify-between items-center">
             <div>
               <p className="text-sm">Debit Card</p>
               <p className="tracking-widest text-lg">**** 2598</p>
@@ -43,28 +43,28 @@ export default function DashboardPage() {
         </div>
 
         {/* Goals */}
-        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3">
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3 border border-[#3cb0c9]/20">
           <p className="text-gray-500">Goals</p>
-          <h2 className="text-xl font-bold">${goals.total.toLocaleString()}</h2>
+          <h2 className="text-xl font-bold text-[#3cb0c9]">${goals.total.toLocaleString()}</h2>
           <p className="text-sm text-gray-600">Target Achieved: <span className="text-green-600">${goals.achieved}</span></p>
           <div className="w-full h-3 bg-gray-200 rounded-full">
             <div
-              className="h-3 bg-pink-500 rounded-full"
+              className="h-3 bg-[#3190a5] rounded-full"
               style={{ width: `${(goals.achieved / goals.total) * 100}%` }}
             ></div>
           </div>
         </div>
 
         {/* Upcoming Bills */}
-        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3">
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-3 border border-[#3cb0c9]/20">
           <p className="text-gray-500">Upcoming Bill</p>
           {upcomingBills.map((bill, i) => (
             <div key={i} className="flex justify-between border-b py-2">
               <div>
-                <p className="font-medium">{bill.name}</p>
+                <p className="font-medium text-[#3cb0c9]">{bill.name}</p>
                 <p className="text-sm text-gray-500">{bill.date}</p>
               </div>
-              <p className="text-pink-600 font-semibold">${bill.amount}</p>
+              <p className="text-[#3190a5] font-semibold">${bill.amount}</p>
             </div>
           ))}
         </div>
@@ -73,8 +73,8 @@ export default function DashboardPage() {
       {/* Transactions & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Transactions */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <h3 className="font-semibold mb-2">Recent Transactions</h3>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-[#3cb0c9]/20">
+          <h3 className="font-semibold mb-2 text-[#3cb0c9]">Recent Transactions</h3>
           <div className="space-y-2">
             {recent.map((item, i) => (
               <div key={i} className="flex justify-between border-b pb-2">
@@ -94,8 +94,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Placeholder */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <h3 className="font-semibold mb-2">Weekly Comparison</h3>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-[#3cb0c9]/20">
+          <h3 className="font-semibold mb-2 text-[#3cb0c9]">Weekly Comparison</h3>
           <div className="text-sm text-gray-400 italic text-center">Chart coming soon...</div>
         </div>
       </div>

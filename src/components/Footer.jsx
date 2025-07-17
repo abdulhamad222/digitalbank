@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
         {/* Brand */}
         <div>
-          <h2 className="text-2xl font-bold text-blue-700 mb-2">Digital Bank</h2>
+          <h2 className="text-2xl font-bold text-[#3cb0c9] mb-2">Digital Bank</h2>
           <p className="text-gray-500">Secure. Simple. Smart Banking.</p>
         </div>
 
@@ -17,22 +17,22 @@ export default function Footer() {
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Quick Links</h3>
           <ul className="space-y-2">
             <li>
-              <Link href="/" className="text-gray-500 hover:text-blue-600 transition">
+              <Link href="/" className="text-gray-500 hover:text-[#3cb0c9] transition">
                 Home
               </Link>
             </li>
             <li>
-              <Link href="/about" className="text-gray-500 hover:text-blue-600 transition">
+              <Link href="/about" className="text-gray-500 hover:text-[#3cb0c9] transition">
                 About
               </Link>
             </li>
             <li>
-              <Link href="/facilities" className="text-gray-500 hover:text-blue-600 transition">
+              <Link href="/facilities" className="text-gray-500 hover:text-[#3cb0c9] transition">
                 Facilities
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="text-gray-500 hover:text-blue-600 transition">
+              <Link href="/contact" className="text-gray-500 hover:text-[#3cb0c9] transition">
                 Contact
               </Link>
             </li>
