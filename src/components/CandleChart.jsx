@@ -36,7 +36,7 @@ export const CandlestickChart = ({ transactions }) => {
   return (
     <ChartCanvas
       height={300}
-      width={700}
+      width={1000}
       ratio={1}
       margin={{ left: 50, right: 50, top: 10, bottom: 30 }}
       data={data}

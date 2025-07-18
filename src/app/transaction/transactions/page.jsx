@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
+import { toast } from 'react-toastify'; 
 
 export default function TransactionPage() {
   const router = useRouter();
@@ -17,34 +18,37 @@ export default function TransactionPage() {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [amount, setAmount] = useState('');
 
+  const fetchData = async () => {
+    try {
+      const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+      const data = await res.json();
+      setCapital(data.capital);
+      setTotalSent(data.totalSent);
+      setTotalReceived(data.totalReceived);
+      setTransactions(data.transactions.reverse());
+
+      const usersRes = await fetch('/api/users');
+      const allUsers = await usersRes.json();
+      setUsers(allUsers.filter(u => u._id !== user._id));
+    } catch (err) {
+      toast.error('Failed to load data');
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       router.replace('/signup');
       return;
     }
-
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
-        const data = await res.json();
-        setCapital(data.capital);
-        setTotalSent(data.totalSent);
-        setTotalReceived(data.totalReceived);
-        setTransactions(data.transactions.reverse());
-
-        const usersRes = await fetch('/api/users');
-        const allUsers = await usersRes.json();
-        setUsers(allUsers.filter(u => u._id !== user._id));
-      } catch (err) {
-        console.error('Failed to load transactions or users:', err);
-      }
-    };
-
     fetchData();
   }, [user]);
 
   const handleSend = async () => {
-    if (!selectedUserId || !amount) return;
+    if (!selectedUserId || !amount) {
+      toast.error('Please select a user and enter amount');
+      return;
+    }
+
     try {
       const res = await fetch('/api/transactions/send', {
         method: 'POST',
@@ -55,33 +59,22 @@ export default function TransactionPage() {
           amount: parseFloat(amount),
         }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
+        toast.success('Money sent successfully!');
         setShowModal(false);
         setAmount('');
         setSelectedUserId('');
-        router.refresh(); // refresh the page to update capital and transactions
+        await fetchData(); // real-time refresh
       } else {
-        alert(data.message || 'Failed to send money');
+        toast.error(data.message || 'Failed to send money');
       }
     } catch (err) {
-      console.error(err);
+      toast.error('Server error');
     }
   };
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center flex-col gap-4 bg-gray-100">
-        <p className="text-xl font-semibold text-red-600">Please Sign In first to access your transactions.</p>
-        <button
-          onClick={() => router.push('/signup')}
-          className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-lg"
-        >
-          Sign In
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen p-6 space-y-6 bg-gray-50">
@@ -131,15 +124,12 @@ export default function TransactionPage() {
         {/* Send & Receive Buttons */}
         <div className="bg-white p-6 rounded-2xl shadow-md border border-[#3cb0c9]/20 flex flex-col justify-center items-center gap-6">
           <h3 className="text-xl font-semibold text-[#3cb0c9]">Actions</h3>
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="grid grid-cols-1 w-full">
             <button
               onClick={() => setShowModal(true)}
               className="w-full bg-[#3cb0c9] text-white py-3 rounded-lg font-semibold hover:bg-[#3190a5] transition"
             >
               Send Money
-            </button>
-            <button className="w-full border border-[#3cb0c9] text-[#3cb0c9] py-3 rounded-lg font-semibold hover:bg-[#e8f8fb] transition">
-              Receive Money
             </button>
           </div>
         </div>
@@ -147,9 +137,9 @@ export default function TransactionPage() {
 
       {/* Send Modal */}
       {showModal && (
-        <div className="fixed top-0 inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-lg font-bold mb-4">Send Money</h2>
+            <h2 className="text-lg font-bold mb-4 text-[#3cb0c9]">Send Money</h2>
             <select
               className="w-full mb-4 border p-2 rounded"
               value={selectedUserId}

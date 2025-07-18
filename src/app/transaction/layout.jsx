@@ -1,36 +1,44 @@
 'use client';
 
-
 import { useRouter } from 'next/navigation';
 import { Toaster } from 'react-hot-toast';
 import Sidebar from '@/components/Sidebar';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
+import { useEffect, useState } from 'react';
 
-export default function TransactionLayout({ children }) {
+function AuthGate({ children }) {
   const { user } = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center flex-col gap-4 bg-gray-100">
-        <p className="text-xl font-semibold text-red-600">
-          Please sign in first to access the dashboard.
-        </p>
-        <button
-          onClick={() => router.push('/signup')}
-          className="px-5 py-3 rounded-lg font-semibold transition duration-300 shadow-sm bg-[#3cb0c9] text-white border border-transparent hover:bg-transparent hover:text-[#3cb0c9] hover:border-[#3cb0c9]"
-        >
-          Sign In
-        </button>
-      </div>
-    );
+  useEffect(() => {
+    // wait for hydration
+    if (user === null) {
+      setLoading(false);
+    } else if (!user) {
+      router.replace('/signup');
+    } else {
+      setLoading(false);
+    }
+  }, [user, router]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
+    <>
+      <Sidebar />
+      <main className="ml-64 p-6 bg-gray-100 min-h-screen">{children}</main>
+    </>
+  );
+}
+
+export default function TransactionLayout({ children }) {
+  return (
     <AuthProvider>
       <Toaster position="top-center" reverseOrder={false} />
-        <Sidebar />
-        <main className="ml-64 p-6 bg-gray-100 min-h-screen">{children}</main>
+      <AuthGate>{children}</AuthGate>
     </AuthProvider>
   );
 }

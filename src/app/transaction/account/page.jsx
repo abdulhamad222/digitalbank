@@ -9,18 +9,30 @@ export default function AccountPage() {
   const [profile, setProfile] = useState({});
 
   useEffect(() => {
-    // Simulate fetching user profile from DB
-    if (user) {
-      setProfile({
-        name: user.name || 'John Doe',
-        email: user.email || 'johndoe@example.com',
-        phone: '+92 300 1234567',
-        role: 'Customer',
-        createdAt: user.createdAt || new Date().toISOString(),
-        avatar: '', // You can load a URL from DB here
-      });
-    }
-  }, [user]);
+    const fetchProfile = async () => {
+        if (!user?._id) return;
+
+        try {
+        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+        const data = await res.json();
+
+        setProfile({
+            name: user.name || 'John Doe',
+            email: user.email || 'johndoe@example.com',
+            phone: '+92 *** *******',
+            role: 'Customer',
+            createdAt: user.createdAt || new Date().toISOString(),
+            avatar: '',
+            capital: data.capital || 1000,
+        });
+        } catch (err) {
+        console.error('Failed to fetch profile summary:', err);
+        }
+    };
+
+    fetchProfile();
+    }, [user]);
+
 
   return (
     <div className="space-y-8">

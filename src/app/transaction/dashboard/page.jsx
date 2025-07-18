@@ -2,41 +2,49 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
-import { CandlestickChart } from '@/components/CandleChart'; // Make sure this component is set up correctly
+import { CandlestickChart } from '@/components/CandleChart';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [capital, setCapital] = useState(1000); // Default value
+  const [capital, setCapital] = useState(1000);
   const [transactions, setTransactions] = useState([]);
+  const [bills, setBills] = useState([]);
 
- useEffect(() => {
-  const fetchTransactions = async () => {
+  useEffect(() => {
+    const fetchSummary = async () => {
       try {
-        const res = await fetch(`/api/transactions?userId=${user._id}`);
+        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
         const data = await res.json();
-        setTransactions(data || []);
-        const total = data.reduce((acc, t) =>
-          t.type === 'deposit' ? acc + t.amount : acc - t.amount,
-          1000
-        );
-        setCapital(total);
+        setCapital(data.capital);
+        setTransactions(data.transactions.reverse());
       } catch (err) {
-        console.error('Failed to fetch transactions:', err);
+        console.error('Failed to fetch summary:', err);
       }
     };
 
     if (user?._id) {
-      fetchTransactions();
+      fetchSummary();
     }
   }, [user]);
 
+  useEffect(() => {
+    const fetchBills = async () => {
+      try {
+        const res = await fetch(`/api/bills?userId=${user._id}`);
+        const data = await res.json();
+        setBills(data || []);
+      } catch (err) {
+        console.error('Failed to fetch bills:', err);
+      }
+    };
 
-  const bills = [
-    { name: 'Netflix Subscription', amount: 15, date: 'July 20' },
-    { name: 'Electric Bill', amount: 90, date: 'July 25' },
-  ];
+    if (user?._id) {
+      fetchBills();
+    }
+  }, [user]);
 
   const recent = transactions.slice(0, 4);
+  const upcomingBills = bills.filter(b => b.status === 'Pending');
 
   return (
     <div className="space-y-8">
@@ -60,18 +68,22 @@ export default function DashboardPage() {
           <p className="text-gray-600">Withdrawals: ${transactions.filter(t => t.type === 'withdrawal').reduce((a, b) => a + b.amount, 0)}</p>
         </div>
 
-        {/* Upcoming Bills */}
+        {/* Upcoming Bills (Real) */}
         <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
           <h3 className="font-semibold text-[#3cb0c9] mb-4">Upcoming Bills</h3>
-          {bills.map((bill, i) => (
-            <div key={i} className="flex justify-between border-b py-2">
-              <div>
-                <p className="font-medium text-[#3cb0c9]">{bill.name}</p>
-                <p className="text-sm text-gray-500">{bill.date}</p>
+          {upcomingBills.length === 0 ? (
+            <p className="text-gray-500">No pending bills</p>
+          ) : (
+            upcomingBills.map((bill, i) => (
+              <div key={i} className="flex justify-between border-b py-2">
+                <div>
+                  <p className="font-medium text-[#3cb0c9]">{bill.name}</p>
+                  <p className="text-sm text-gray-500">Due: {bill.dueDate || 'N/A'}</p>
+                </div>
+                <p className="text-[#3190a5] font-semibold">${bill.amount}</p>
               </div>
-              <p className="text-[#3190a5] font-semibold">${bill.amount}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -86,7 +98,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">{item.source || 'N/A'}</p>
               </div>
               <div className="text-right">
-                <p className={`font-bold ${item.type === 'deposit' ? 'text-green-600' : 'text-red-500'}`}>
+                <p className={`font-bold ${item.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
                   ${Math.abs(item.amount)}
                 </p>
                 <p className="text-sm text-gray-400">{new Date(item.date).toLocaleDateString()}</p>
