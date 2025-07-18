@@ -8,18 +8,66 @@ export default function TransactionPage() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const [capital, setCapital] = useState(102340);
-  const [transactions, setTransactions] = useState([
-    { id: 1, title: 'Received from Alice', type: 'Received', amount: 3500, date: 'Jul 15, 2025' },
-    { id: 2, title: 'Sent to Bob', type: 'Sent', amount: -2200, date: 'Jul 14, 2025' },
-    { id: 3, title: 'Received from Client', type: 'Received', amount: 7000, date: 'Jul 12, 2025' },
-  ]);
+  const [capital, setCapital] = useState(0);
+  const [totalSent, setTotalSent] = useState(0);
+  const [totalReceived, setTotalReceived] = useState(0);
+  const [transactions, setTransactions] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
     if (!user) {
       router.replace('/signup');
+      return;
     }
-  }, [user, router]);
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+        const data = await res.json();
+        setCapital(data.capital);
+        setTotalSent(data.totalSent);
+        setTotalReceived(data.totalReceived);
+        setTransactions(data.transactions.reverse());
+
+        const usersRes = await fetch('/api/users');
+        const allUsers = await usersRes.json();
+        setUsers(allUsers.filter(u => u._id !== user._id));
+      } catch (err) {
+        console.error('Failed to load transactions or users:', err);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  const handleSend = async () => {
+    if (!selectedUserId || !amount) return;
+    try {
+      const res = await fetch('/api/transactions/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: user._id,
+          to: selectedUserId,
+          amount: parseFloat(amount),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setShowModal(false);
+        setAmount('');
+        setSelectedUserId('');
+        router.refresh(); // refresh the page to update capital and transactions
+      } else {
+        alert(data.message || 'Failed to send money');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (!user) {
     return (
@@ -37,7 +85,6 @@ export default function TransactionPage() {
 
   return (
     <div className="min-h-screen p-6 space-y-6 bg-gray-50">
-
       {/* Top Section */}
       <div className="h-[40vh] bg-white rounded-3xl p-6 shadow-md flex flex-col justify-between border border-[#3cb0c9]/20">
         <div className="space-y-2">
@@ -47,36 +94,37 @@ export default function TransactionPage() {
         <div className="flex justify-between">
           <div>
             <p className="text-sm text-gray-600">Total Sent</p>
-            <p className="text-lg font-semibold text-red-500">$4,200</p>
+            <p className="text-lg font-semibold text-red-500">${totalSent.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Received</p>
-            <p className="text-lg font-semibold text-green-600">$12,500</p>
+            <p className="text-lg font-semibold text-green-600">${totalReceived.toLocaleString()}</p>
           </div>
         </div>
       </div>
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
         {/* Transaction History */}
         <div className="bg-white p-4 rounded-2xl shadow-md border border-[#3cb0c9]/20">
           <h3 className="text-xl font-semibold text-[#3cb0c9] mb-4">Transaction History</h3>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            {transactions.map((txn) => (
+            {transactions.length > 0 ? transactions.map((txn) => (
               <div
-                key={txn.id}
+                key={txn._id}
                 className="flex justify-between items-center p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition"
               >
                 <div>
                   <p className="font-medium text-gray-800">{txn.title}</p>
-                  <p className="text-sm text-gray-500">{txn.date}</p>
+                  <p className="text-sm text-gray-500">{new Date(txn.date).toLocaleDateString()}</p>
                 </div>
-                <p className={`font-bold ${txn.amount > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                <p className={`font-bold ${txn.type === 'received' ? 'text-green-600' : 'text-red-500'}`}>
                   ${Math.abs(txn.amount)}
                 </p>
               </div>
-            ))}
+            )) : (
+              <p className="text-gray-400 italic text-sm text-center">No transactions yet.</p>
+            )}
           </div>
         </div>
 
@@ -84,7 +132,10 @@ export default function TransactionPage() {
         <div className="bg-white p-6 rounded-2xl shadow-md border border-[#3cb0c9]/20 flex flex-col justify-center items-center gap-6">
           <h3 className="text-xl font-semibold text-[#3cb0c9]">Actions</h3>
           <div className="grid grid-cols-2 gap-4 w-full">
-            <button className="w-full bg-[#3cb0c9] text-white py-3 rounded-lg font-semibold hover:bg-[#3190a5] transition">
+            <button
+              onClick={() => setShowModal(true)}
+              className="w-full bg-[#3cb0c9] text-white py-3 rounded-lg font-semibold hover:bg-[#3190a5] transition"
+            >
               Send Money
             </button>
             <button className="w-full border border-[#3cb0c9] text-[#3cb0c9] py-3 rounded-lg font-semibold hover:bg-[#e8f8fb] transition">
@@ -93,6 +144,45 @@ export default function TransactionPage() {
           </div>
         </div>
       </div>
+
+      {/* Send Modal */}
+      {showModal && (
+        <div className="fixed top-0 inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4">Send Money</h2>
+            <select
+              className="w-full mb-4 border p-2 rounded"
+              value={selectedUserId}
+              onChange={e => setSelectedUserId(e.target.value)}
+            >
+              <option value="">Select a user</option>
+              {users.map(u => (
+                <option key={u._id} value={u._id}>
+                  {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              className="w-full border p-2 rounded mb-4"
+              placeholder="Amount"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+            />
+            <div className="flex justify-end gap-4">
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:underline">
+                Cancel
+              </button>
+              <button
+                onClick={handleSend}
+                className="bg-[#3cb0c9] text-white px-4 py-2 rounded hover:bg-[#3190a5]"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

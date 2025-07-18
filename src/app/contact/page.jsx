@@ -31,7 +31,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] to-white px-4 py-28">
+    <div className="min-h-screen px-4 py-28">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-md">
         <h2 className="text-3xl font-bold text-[#3cb0c9] mb-6 text-center">Get in Touch</h2>
         <form onSubmit={handleSubmit} className="space-y-6">

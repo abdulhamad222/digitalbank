@@ -29,10 +29,8 @@ export default function TransactionLayout({ children }) {
   return (
     <AuthProvider>
       <Toaster position="top-center" reverseOrder={false} />
-      <div className="min-h-screen flex bg-gray-100">
         <Sidebar />
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
-      </div>
+        <main className="ml-64 p-6 bg-gray-100 min-h-screen">{children}</main>
     </AuthProvider>
   );
 }

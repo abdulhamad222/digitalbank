@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
+import { useAuth } from '@/components/AuthContext'; // ✅ import your auth context
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useAuth(); // ✅ get user from auth context
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -37,7 +39,7 @@ export default function Navbar() {
             onMouseLeave={() => setDropdownOpen(false)}
           >
             <div className={`${navLinkClass} cursor-pointer flex items-center gap-1`}>
-              <span>Facilities</span>
+              <Link href="/facilities"><span>Facilities</span></Link>
               <ChevronDown size={16} />
               <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-[#3cb0c9] transition-all group-hover:w-full" />
             </div>
@@ -67,14 +69,24 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Login Button */}
+        {/* Profile / SignUp Button */}
         <div className="hidden md:block">
-          <Link
-            href="/signup"
-            className="px-5 py-2 rounded-lg font-semibold transition duration-300 shadow-sm bg-[#3cb0c9] text-white border border-transparent hover:bg-transparent hover:text-[#3cb0c9] hover:border-[#3cb0c9]"
-          >
-            SignUp
-          </Link>
+          {user ? (
+            <Link
+              href="/transaction/dashboard"
+              className="flex items-center justify-center bg-[#3cb0c9] text-white font-semibold rounded-full w-10 h-10 hover:bg-[#3190a5] transition"
+              title="Go to Dashboard"
+            >
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </Link>
+          ) : (
+            <Link
+              href="/signup"
+              className="px-5 py-2 rounded-lg font-semibold transition duration-300 shadow-sm bg-[#3cb0c9] text-white border border-transparent hover:bg-transparent hover:text-[#3cb0c9] hover:border-[#3cb0c9]"
+            >
+              SignUp
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Icon */}
@@ -100,7 +112,16 @@ export default function Navbar() {
           </div>
 
           <Link href="/contact" className="block hover:text-[#3cb0c9] transition">Contact</Link>
-          <Link href="/signup" className="block text-[#3cb0c9] font-semibold hover:text-[#3190a5] transition">Login</Link>
+
+          {user ? (
+            <Link href="/transaction/dashboard" className="block text-[#3cb0c9] font-semibold hover:text-[#3190a5] transition">
+              My Dashboard
+            </Link>
+          ) : (
+            <Link href="/signup" className="block text-[#3cb0c9] font-semibold hover:text-[#3190a5] transition">
+              Login
+            </Link>
+          )}
         </div>
       )}
     </nav>

@@ -4,7 +4,7 @@ import { Send, RefreshCw, ReceiptText } from 'lucide-react';
 
 export default function PaymentsPage() {
   return (
-    <main className="min-h-screen bg-white px-4 md:px-12 py-28">
+    <main className="min-h-screen px-4 md:px-12 py-28">
       <div className="max-w-6xl mx-auto space-y-16">
         {/* Page Header */}
         <section className="text-center">

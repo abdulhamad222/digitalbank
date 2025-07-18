@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import {
   LayoutDashboard,
-  Users,
+  Wallet,
+  ArrowLeftRight,
   FileText,
+  Landmark,
   BarChart2,
   Settings,
   Menu,
@@ -25,14 +27,14 @@ export default function Sidebar() {
       href: '/transaction/dashboard',
     },
     {
-      label: 'Account',
-      icon: Wallet,
-      href: '/transaction/account',
-    },
-    {
       label: 'Transaction',
       icon: ArrowLeftRight,
       href: '/transaction/transactions',
+    },
+    {
+      label: 'Account',
+      icon: Wallet,
+      href: '/transaction/account',
     },
     {
       label: 'Bills & Payments',
@@ -50,7 +52,7 @@ export default function Sidebar() {
       href: '/transaction/report',
     },
     {
-      label: 'User Settings',
+      label: 'Profile Settings',
       icon: Settings,
       href: '/transaction/userSettings',
     },
@@ -58,7 +60,7 @@ export default function Sidebar() {
 
   return (
     <div
-      className="flex flex-col h-screen bg-[#3cb0c9] text-white transition-all duration-300 overflow-hidden"
+      className="fixed top-0 left-0 h-screen bg-[#3cb0c9] text-white transition-all duration-300 overflow-y-auto z-50 flex flex-col justify-between"
       style={{ width: isOpen ? '16rem' : '4rem' }}
     >
       {/* Top Bar */}

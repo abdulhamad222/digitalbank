@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
           {Array.from({ length: 80 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-[2px] h-[2px] bg-black rounded-full star"
+              className="absolute w-[3px] h-[3px] bg-black rounded-full star"
               style={{
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
