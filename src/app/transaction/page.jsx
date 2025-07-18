@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/AuthContext'; 
+import { useAuth } from '@/components/AuthContext';  
 
 export default function TransactionPage() {
   const router = useRouter();

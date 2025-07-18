@@ -19,12 +19,41 @@ export default function Sidebar() {
   const { signOut } = useAuth();
 
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, href: '/transaction/dashboard' },
-    { label: 'Transaction', icon: Users, href: '#' },
-    { label: 'Bills', icon: FileText, href: '#' },
-    { label: 'Expenses', icon: BarChart2, href: '#' },
-    { label: 'Goals', icon: Settings, href: '#' },
-    { label: 'Settings', icon: Settings, href: '#' },
+    {
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+      href: '/transaction/dashboard',
+    },
+    {
+      label: 'Account',
+      icon: Wallet,
+      href: '/transaction/account',
+    },
+    {
+      label: 'Transaction',
+      icon: ArrowLeftRight,
+      href: '/transaction/transactions',
+    },
+    {
+      label: 'Bills & Payments',
+      icon: FileText,
+      href: '/transaction/bills',
+    },
+    {
+      label: 'Loan',
+      icon: Landmark,
+      href: '/transaction/loan',
+    },
+    {
+      label: 'Reports',
+      icon: BarChart2,
+      href: '/transaction/report',
+    },
+    {
+      label: 'User Settings',
+      icon: Settings,
+      href: '/transaction/userSettings',
+    },
   ];
 
   return (
