@@ -1,13 +1,14 @@
 import mongoose from 'mongoose';
 
-const loanSchema = new mongoose.Schema({
-  name: String,
-  email: String,
+const LoanSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   amount: Number,
-  appliedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  emi: Number,
+  duration: Number,
+  cnic: String,
+  phone: String,
+  address: String,
+  picture: String,
+}, { timestamps: true });
 
-export default mongoose.models.Loan || mongoose.model('Loan', loanSchema);
+export default mongoose.models.Loan || mongoose.model('Loan', LoanSchema);

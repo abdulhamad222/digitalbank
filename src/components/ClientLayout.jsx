@@ -6,13 +6,17 @@ import Footer from '@/components/Footer';
 
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
+
   const isTransactionRoute = pathname.startsWith('/transaction');
+  const isAdminRoute = pathname.startsWith('/admin');
+
+  const hideLayout = isTransactionRoute || isAdminRoute;
 
   return (
     <>
-      {!isTransactionRoute && <Navbar />}
+      {!hideLayout && <Navbar />}
       {children}
-      {!isTransactionRoute && <Footer />}
+      {!hideLayout && <Footer />}
     </>
   );
 }
