@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f3f3f3;
+  --foreground: #171717;
+
+  --buttonbackground: #3cb0c9;
+  --hoverbuttonbackground: #3190a5;
+}
+
+textarea {
+  resize: none;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.star {
+  animation: twinkle 1s infinite ease-in-out;
+}
