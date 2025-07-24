@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/components/AuthContext'; 
+import { useAuth } from '@/components/AuthContext';
 import { FileDown, CalendarDays, TrendingUp, TrendingDown } from 'lucide-react';
 
 export default function ReportPage() {
@@ -14,7 +14,7 @@ export default function ReportPage() {
     if (!user) return;
     const fetchTransactions = async () => {
       try {
-        const res = await fetch('/api/transactions?userId=123'); // replace with dynamic user ID
+        const res = await fetch(`/api/transactions?userId=${user?._id}`);
         const { transactions } = await res.json();
         setTransactions(transactions);
         setFiltered(transactions);
@@ -26,32 +26,37 @@ export default function ReportPage() {
     fetchTransactions();
   }, [user]);
 
-  // Filters
   useEffect(() => {
     const now = new Date();
     const filteredTxns =
-      filter === 'monthly'
-        ? transactions.filter(txn => new Date(txn.date).getMonth() === now.getMonth())
-        : transactions.filter(txn => new Date(txn.date).getFullYear() === now.getFullYear());
-    setFiltered(filteredTxns);
+    filter === 'monthly'
+      ? (transactions || []).filter(txn => {
+          const txnDate = new Date(txn.date);
+          return (
+            txnDate.getMonth() === now.getMonth() &&
+            txnDate.getFullYear() === now.getFullYear()
+          );
+        })
+      : (transactions || []);
   }, [filter, transactions]);
 
-  const totalDeposit = filtered
-    .filter(t => t.type === 'deposit')
-    .reduce((acc, t) => acc + t.amount, 0);
+ const totalDeposit = (filtered || [])
+  .filter(t => t.type === 'deposit')
+  .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalWithdraw = filtered
-    .filter(t => t.type === 'withdrawal')
-    .reduce((acc, t) => acc + t.amount, 0);
+  const totalWithdraw = (filtered || [])
+  .filter(t => t.type === 'withdrawal')
+  .reduce((acc, t) => acc + t.amount, 0);
 
   const netBalance = totalDeposit - totalWithdraw;
 
   const exportCSV = () => {
     const header = 'Date,Type,Amount,Source\n';
-    const rows = filtered.map(t => `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${t.source}`).join('\n');
+    const rows = filtered
+      .map(t => `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${t.source || 'N/A'}`)
+      .join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
-
     const a = document.createElement('a');
     a.href = url;
     a.download = `transactions-${filter}.csv`;
@@ -68,7 +73,9 @@ export default function ReportPage() {
         <button
           onClick={() => setFilter('monthly')}
           className={`px-4 py-2 rounded-lg font-semibold border ${
-            filter === 'monthly' ? 'bg-[#3cb0c9] text-white' : 'text-[#3cb0c9] border-[#3cb0c9]'
+            filter === 'monthly'
+              ? 'bg-[#3cb0c9] text-white'
+              : 'text-[#3cb0c9] border-[#3cb0c9]'
           }`}
         >
           Monthly
@@ -76,7 +83,9 @@ export default function ReportPage() {
         <button
           onClick={() => setFilter('yearly')}
           className={`px-4 py-2 rounded-lg font-semibold border ${
-            filter === 'yearly' ? 'bg-[#3cb0c9] text-white' : 'text-[#3cb0c9] border-[#3cb0c9]'
+            filter === 'yearly'
+              ? 'bg-[#3cb0c9] text-white'
+              : 'text-[#3cb0c9] border-[#3cb0c9]'
           }`}
         >
           Yearly
@@ -128,15 +137,18 @@ export default function ReportPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((t, i) => (
-                <tr key={i} className="border-b text-gray-700">
-                  <td className="px-4 py-2">{new Date(t.date).toLocaleDateString()}</td>
-                  <td className="px-4 py-2 capitalize">{t.type}</td>
-                  <td className="px-4 py-2">${t.amount}</td>
-                  <td className="px-4 py-2">{t.source || 'N/A'}</td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
+              {(filtered || []).length > 0 ? (
+                filtered.map((t, i) => (
+                  <tr key={i} className="border-b text-gray-700">
+                    <td className="px-4 py-2">
+                      {new Date(t.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2 capitalize">{t.type}</td>
+                    <td className="px-4 py-2">${t.amount}</td>
+                    <td className="px-4 py-2">{t.source || 'N/A'}</td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan={4} className="text-center py-4 text-gray-400 italic">
                     No transactions found for this period.

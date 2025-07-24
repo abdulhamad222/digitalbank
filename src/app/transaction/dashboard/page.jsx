@@ -107,12 +107,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* 5. Candlestick Chart */}
-      <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
-        <h3 className="font-semibold text-[#3cb0c9] mb-4">Capital Analysis</h3>
-        <CandlestickChart transactions={transactions} />
-      </div>
     </div>
   );
 }
