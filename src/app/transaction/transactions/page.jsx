@@ -77,7 +77,7 @@ export default function TransactionPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-6 bg-gray-50">
+    <div className="min-h-screen p-6 space-y-6">
       {/* Top Section */}
       <div className="h-[40vh] bg-white rounded-3xl p-6 shadow-md flex flex-col justify-between border border-[#3cb0c9]/20">
         <div className="space-y-2">

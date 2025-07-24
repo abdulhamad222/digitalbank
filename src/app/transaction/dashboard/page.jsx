@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
-import { CandlestickChart } from '@/components/CandleChart';
 
 export default function DashboardPage() {
   const { user } = useAuth();

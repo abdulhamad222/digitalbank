@@ -29,7 +29,7 @@ function AuthGate({ children }) {
   return (
     <>
       <Sidebar />
-      <main className="ml-64 p-6 bg-gray-100 min-h-screen">{children}</main>
+      <main className="ml-64 p-6 min-h-screen">{children}</main>
     </>
   );
 }

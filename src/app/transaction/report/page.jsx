@@ -7,59 +7,62 @@ import { FileDown, CalendarDays, TrendingUp, TrendingDown } from 'lucide-react';
 export default function ReportPage() {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [filter, setFilter] = useState('monthly');
+  const [capital, setCapital] = useState(0);
 
   useEffect(() => {
     if (!user) return;
+
     const fetchTransactions = async () => {
       try {
-        const res = await fetch(`/api/transactions?userId=${user?._id}`);
-        const { transactions } = await res.json();
+        const res = await fetch(`/api/transactions?userId=${user._id}`);
+        const transactions = await res.json();
         setTransactions(transactions);
-        setFiltered(transactions);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
       }
     };
 
+    const fetchCapital = async () => {
+      try{
+        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+        const data = await res.json();
+        setCapital(data.capital);
+      }catch(err){
+        console.error('Failed to fetch capital:', err);
+      }
+    };
+
     fetchTransactions();
+    fetchCapital();
   }, [user]);
 
-  useEffect(() => {
-    const now = new Date();
-    const filteredTxns =
-    filter === 'monthly'
-      ? (transactions || []).filter(txn => {
-          const txnDate = new Date(txn.date);
-          return (
-            txnDate.getMonth() === now.getMonth() &&
-            txnDate.getFullYear() === now.getFullYear()
-          );
-        })
-      : (transactions || []);
-  }, [filter, transactions]);
 
- const totalDeposit = (filtered || [])
-  .filter(t => t.type === 'deposit')
-  .reduce((acc, t) => acc + t.amount, 0);
+  const totalDeposit = transactions
+    .filter((t) => t.type === 'deposit' || t.type === 'received')
+    .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalWithdraw = (filtered || [])
-  .filter(t => t.type === 'withdrawal')
-  .reduce((acc, t) => acc + t.amount, 0);
+  const totalWithdraw = transactions
+    .filter((t) => t.type === 'withdrawal' || t.type === 'sent')
+    .reduce((acc, t) => acc + t.amount, 0);
 
   const netBalance = totalDeposit - totalWithdraw;
 
   const exportCSV = () => {
     const header = 'Date,Type,Amount,Source\n';
-    const rows = filtered
-      .map(t => `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${t.source || 'N/A'}`)
+    const rows = transactions
+      .map(
+        (t) =>
+          `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${
+            t.source || t.title || 'N/A'
+          }`
+      )
       .join('\n');
+
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transactions-${filter}.csv`;
+    a.download = `transactions-full.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -68,31 +71,11 @@ export default function ReportPage() {
     <div className="space-y-8">
       <div className="text-2xl font-semibold text-[#3cb0c9]">Reports & Export</div>
 
-      {/* Filter Controls */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => setFilter('monthly')}
-          className={`px-4 py-2 rounded-lg font-semibold border ${
-            filter === 'monthly'
-              ? 'bg-[#3cb0c9] text-white'
-              : 'text-[#3cb0c9] border-[#3cb0c9]'
-          }`}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setFilter('yearly')}
-          className={`px-4 py-2 rounded-lg font-semibold border ${
-            filter === 'yearly'
-              ? 'bg-[#3cb0c9] text-white'
-              : 'text-[#3cb0c9] border-[#3cb0c9]'
-          }`}
-        >
-          Yearly
-        </button>
+      {/* Export Button Only */}
+      <div className="flex justify-end">
         <button
           onClick={exportCSV}
-          className="ml-auto flex items-center gap-2 bg-[#3cb0c9] hover:bg-[#3190a5] text-white px-4 py-2 rounded-lg font-semibold"
+          className="flex items-center gap-2 bg-[#3cb0c9] hover:bg-[#3190a5] text-white px-4 py-2 rounded-lg font-semibold"
         >
           <FileDown className="w-5 h-5" /> Export CSV
         </button>
@@ -101,23 +84,23 @@ export default function ReportPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-xl border border-[#3cb0c9]/20 shadow-sm">
-          <p className="text-gray-600">Total Deposits</p>
+          <p className="text-gray-600">Total Received</p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-2xl font-bold text-green-600">${totalDeposit}</span>
             <TrendingUp className="text-green-500" />
           </div>
         </div>
         <div className="bg-white p-5 rounded-xl border border-[#3cb0c9]/20 shadow-sm">
-          <p className="text-gray-600">Total Withdrawals</p>
+          <p className="text-gray-600">Total Sent</p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-2xl font-bold text-red-500">${totalWithdraw}</span>
             <TrendingDown className="text-red-500" />
           </div>
         </div>
         <div className="bg-white p-5 rounded-xl border border-[#3cb0c9]/20 shadow-sm">
-          <p className="text-gray-600">Net Balance</p>
+          <p className="text-gray-600">Total Balance</p>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-bold text-[#3cb0c9]">${netBalance}</span>
+            <span className="text-2xl font-bold text-[#3cb0c9]">${capital.toLocaleString()}</span>
             <CalendarDays className="text-[#3cb0c9]" />
           </div>
         </div>
@@ -137,21 +120,19 @@ export default function ReportPage() {
               </tr>
             </thead>
             <tbody>
-              {(filtered || []).length > 0 ? (
-                filtered.map((t, i) => (
+              {transactions.length > 0 ? (
+                transactions.map((t, i) => (
                   <tr key={i} className="border-b text-gray-700">
-                    <td className="px-4 py-2">
-                      {new Date(t.date).toLocaleDateString()}
-                    </td>
+                    <td className="px-4 py-2">{new Date(t.date).toLocaleDateString()}</td>
                     <td className="px-4 py-2 capitalize">{t.type}</td>
                     <td className="px-4 py-2">${t.amount}</td>
-                    <td className="px-4 py-2">{t.source || 'N/A'}</td>
+                    <td className="px-4 py-2">{t.source || t.title || 'N/A'}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td colSpan={4} className="text-center py-4 text-gray-400 italic">
-                    No transactions found for this period.
+                    No transactions found.
                   </td>
                 </tr>
               )}
