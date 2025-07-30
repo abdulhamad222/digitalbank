@@ -1,83 +1,70 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/components/AuthContext';
 
-export default function DashboardPage() {
-  const { user } = useAuth();
-  const [capital, setCapital] = useState(1000);
-  const [transactions, setTransactions] = useState([]);
-  const [bills, setBills] = useState([]);
+export default function AdminDashboardPage() {
+  const [summary, setSummary] = useState({
+    totalUsers: 0,
+    totalCapital: 0,
+    totalTransactions: 0,
+    totalBills: 0,
+    pendingBills: 0,
+  });
+
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [pendingBills, setPendingBills] = useState([]);
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchAdminSummary = async () => {
       try {
-        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+        const res = await fetch('/api/admin/summary');
         const data = await res.json();
-        setCapital(data.capital);
-        setTransactions(data.transactions.reverse());
+        setSummary(data);
+        setRecentTransactions(data.recentTransactions || []);
+        setPendingBills(data.pendingBills || []);
       } catch (err) {
-        console.error('Failed to fetch summary:', err);
+        console.error('Failed to fetch admin summary:', err);
       }
     };
 
-    if (user?._id) {
-      fetchSummary();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const fetchBills = async () => {
-      try {
-        const res = await fetch(`/api/bills?userId=${user._id}`);
-        const data = await res.json();
-        setBills(data || []);
-      } catch (err) {
-        console.error('Failed to fetch bills:', err);
-      }
-    };
-
-    if (user?._id) {
-      fetchBills();
-    }
-  }, [user]);
-
-  const recent = transactions.slice(0, 4);
-  const upcomingBills = bills.filter(b => b.status === 'Pending');
+    fetchAdminSummary();
+  }, []);
 
   return (
     <div className="space-y-8">
-      {/* 1. Header */}
-      <div className="text-2xl font-semibold text-[#3cb0c9]">Bank Dashboard</div>
+      {/* Header */}
+      <div className="text-2xl font-semibold text-[#3cb0c9]">Admin Dashboard</div>
 
-      {/* 2. Capital Overview */}
+      {/* Overview Card */}
       <div className="w-full h-40 bg-gradient-to-r from-[#3cb0c9] to-[#3190a5] text-white rounded-2xl shadow-md p-6 flex flex-col justify-between">
-        <div className="text-lg">Total Capital</div>
-        <div className="text-3xl font-bold">${capital.toLocaleString()}</div>
+        <div className="text-lg">Total System Capital</div>
+        <div className="text-3xl font-bold">${summary.totalCapital.toLocaleString()}</div>
         <div className="text-sm opacity-80">Last updated: {new Date().toLocaleDateString()}</div>
       </div>
 
-      {/* 3. Stats Section */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Transactions Summary */}
+        {/* Summary */}
         <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-[#3cb0c9] mb-4">Transaction Overview</h3>
-          <p className="text-gray-600 mb-2">Total Transactions: {transactions.length}</p>
-          <p className="text-gray-600">Deposits: ${transactions.filter(t => t.type === 'deposit').reduce((a, b) => a + b.amount, 0)}</p>
-          <p className="text-gray-600">Withdrawals: ${transactions.filter(t => t.type === 'withdrawal').reduce((a, b) => a + b.amount, 0)}</p>
+          <h3 className="font-semibold text-[#3cb0c9] mb-4">System Summary</h3>
+          <p className="text-gray-600 mb-1">Total Users: {summary.totalUsers}</p>
+          <p className="text-gray-600 mb-1">Total Transactions: {summary.totalTransactions}</p>
+          <p className="text-gray-600 mb-1">Total Bills: {summary.totalBills}</p>
+          <p className="text-gray-600">Pending Bills: {summary.pendingBills}</p>
         </div>
 
-        {/* Upcoming Bills (Real) */}
+        {/* Pending Bills */}
         <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-[#3cb0c9] mb-4">Upcoming Bills</h3>
-          {upcomingBills.length === 0 ? (
+          <h3 className="font-semibold text-[#3cb0c9] mb-4">Pending Bills</h3>
+          {pendingBills.length === 0 ? (
             <p className="text-gray-500">No pending bills</p>
           ) : (
-            upcomingBills.map((bill, i) => (
+            pendingBills.map((bill, i) => (
               <div key={i} className="flex justify-between border-b py-2">
                 <div>
                   <p className="font-medium text-[#3cb0c9]">{bill.name}</p>
-                  <p className="text-sm text-gray-500">Due: {bill.dueDate || 'N/A'}</p>
+                  <p className="text-sm text-gray-500">User: {bill.userName}</p>
+                  <p className="text-sm text-gray-500">Due: {bill.dueDate}</p>
                 </div>
                 <p className="text-[#3190a5] font-semibold">${bill.amount}</p>
               </div>
@@ -86,24 +73,28 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 4. Recent Transactions */}
+      {/* Recent Transactions */}
       <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
         <h3 className="font-semibold text-[#3cb0c9] mb-4">Recent Transactions</h3>
         <div className="space-y-2">
-          {recent.map((item, i) => (
-            <div key={i} className="flex justify-between border-b pb-2">
-              <div>
-                <p className="font-medium">{item.title || item.type}</p>
-                <p className="text-sm text-gray-500">{item.source || 'N/A'}</p>
+          {recentTransactions.length === 0 ? (
+            <p className="text-gray-500">No recent transactions</p>
+          ) : (
+            recentTransactions.map((tx, i) => (
+              <div key={i} className="flex justify-between border-b pb-2">
+                <div>
+                  <p className="font-medium">{tx.title || tx.type}</p>
+                  <p className="text-sm text-gray-500">By: {tx.userName}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold ${tx.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
+                    ${Math.abs(tx.amount)}
+                  </p>
+                  <p className="text-sm text-gray-400">{new Date(tx.date).toLocaleDateString()}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className={`font-bold ${item.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                  ${Math.abs(item.amount)}
-                </p>
-                <p className="text-sm text-gray-400">{new Date(item.date).toLocaleDateString()}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

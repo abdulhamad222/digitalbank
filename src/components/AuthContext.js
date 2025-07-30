@@ -7,37 +7,51 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
+    const storedAdmin = localStorage.getItem('isAdmin');
+
     if (storedUser) {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+        setUser(JSON.parse(storedUser));
       } catch {
         localStorage.removeItem('user');
-        localStorage.removeItem('user-email');
       }
+    }
+
+    if (storedAdmin === 'true') {
+      setIsAdmin(true);
     }
   }, []);
 
-  const signIn = (userData) => {
+  const signIn = (userData, admin = false) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('user-email', JSON.stringify(userData.email)); // Save email for API usage
-    router.push('/transaction'); // Redirect after login
+
+    if (admin) {
+      localStorage.setItem('isAdmin', 'true');
+      setIsAdmin(true);
+      router.push('/admin/dashboard');
+    } else {
+      localStorage.setItem('user-email', JSON.stringify(userData.email));
+      router.push('/transaction');
+    }
   };
 
   const signOut = () => {
     setUser(null);
+    setIsAdmin(false);
     localStorage.removeItem('user');
     localStorage.removeItem('user-email');
-    router.push('/signup'); // Redirect after logout
+    localStorage.removeItem('isAdmin');
+    router.push('/signup');
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isAdmin, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

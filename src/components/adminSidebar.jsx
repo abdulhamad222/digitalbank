@@ -32,11 +32,6 @@ export default function AdminSidebar() {
       href: '/admin/dashboard/transactions',
     },
     {
-      label: 'Account',
-      icon: Wallet,
-      href: '/admin/dashboard/account',
-    },
-    {
       label: 'Bills & Payments',
       icon: FileText,
       href: '/admin/dashboard/bills',

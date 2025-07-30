@@ -11,14 +11,36 @@ export default function BillsPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    const dummyBills = [
-      { name: 'Netflix', amount: 15, dueDate: '2025-07-25', status: 'Pending' },
-      { name: 'Electric Bill', amount: 85, dueDate: '2025-07-22', status: 'Scheduled' },
-      { name: 'Water Bill', amount: 35, dueDate: '2025-07-20', status: 'Paid' },
-      { name: 'Internet', amount: 55, dueDate: '2025-07-27', status: 'Pending' },
-    ];
-    setBills(dummyBills);
-  }, []);
+  if (user?._id) {
+    fetch(`/api/bills?userId=${user._id}`)
+      .then(res => res.json())
+      .then(async data => {
+        if (data.length === 0) {
+          // Add default bills for new users
+          const defaultBills = [
+            { name: 'Electric Bill', amount: 75, dueDate: '2025-08-05', status: 'Pending' },
+            { name: 'Internet', amount: 50, dueDate: '2025-08-10', status: 'Pending' },
+            { name: 'Netflix', amount: 15, dueDate: '2025-08-12', status: 'Pending' },
+          ];
+
+          for (const bill of defaultBills) {
+            await fetch('/api/bills', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...bill, userId: user._id }),
+            });
+          }
+
+          setBills(defaultBills);
+        } else {
+          setBills(data);
+        }
+      })
+      .catch(() => toast.error('Failed to load bills'));
+  }
+}, [user]);
+
+
 
   useEffect(() => {
     if (user?._id) {

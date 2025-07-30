@@ -1,18 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthContext';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
+  const { signIn } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const res = await fetch('/api/admin-signup', {
+    const res = await fetch('/api/admin-login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -20,8 +20,7 @@ export default function AdminLogin() {
     const data = await res.json();
 
     if (res.ok) {
-      localStorage.setItem('isAdmin', 'true');
-      router.push('/admin/dashboard');
+      signIn({ email }, true); // admin = true
     } else {
       setError(data.message);
     }
