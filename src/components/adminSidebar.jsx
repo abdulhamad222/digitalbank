@@ -46,11 +46,6 @@ export default function AdminSidebar() {
       icon: BarChart2,
       href: '/admin/dashboard/report',
     },
-    {
-      label: 'Profile Settings',
-      icon: Settings,
-      href: '/admin/dashboard/adminSettings',
-    },
   ];
 
   return (

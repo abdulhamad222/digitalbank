@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Loan from '@/models/Loan';
-import { connectDB } from '@/lib/mongodb';
+import { connectDB } from '@/config/mongodb';
 
 // GET: Fetch EMI list
 export async function GET(req) {

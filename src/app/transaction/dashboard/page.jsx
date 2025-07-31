@@ -53,7 +53,9 @@ export default function DashboardPage() {
       {/* 2. Capital Overview */}
       <div className="w-full h-40 bg-gradient-to-r from-[#3cb0c9] to-[#3190a5] text-white rounded-2xl shadow-md p-6 flex flex-col justify-between">
         <div className="text-lg">Total Capital</div>
-        <div className="text-3xl font-bold">${capital.toLocaleString()}</div>
+        <div className="text-3xl font-bold">
+          ${capital ? capital.toLocaleString() : 'Loading...'}
+        </div>
         <div className="text-sm opacity-80">Last updated: {new Date().toLocaleDateString()}</div>
       </div>
 

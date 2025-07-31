@@ -1,6 +1,5 @@
-// pseudo-code for backend endpoint
 import Loan from '@/models/Loan';
-import { connectDB } from '@/lib/mongodb';
+import { connectDB } from '@/config/mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Contact from '@/models/Contact';
-import { connectDB } from '@/lib/mongodb';
+import { connectDB } from '@/config/mongodb';
 
 export async function POST(req) {
   try {

@@ -1,11 +1,27 @@
 import mongoose from 'mongoose';
 
-const BillSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  name: String,
-  amount: Number,
-  dueDate: String,
-  status: { type: String, enum: ['Pending', 'Scheduled', 'Paid'], default: 'Pending' },
-});
+const billSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  dueDate: {
+    type: Date,
+    required: true,
+  },
+  status: {
+    type: String,
+    default: 'Pending',
+  },
+}, { timestamps: true });
 
-export default mongoose.models.Bill || mongoose.model('Bill', BillSchema);
+const Bill = mongoose.models.Bill || mongoose.model('Bill', billSchema);
+export default Bill;

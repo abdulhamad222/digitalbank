@@ -1,41 +1,36 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/components/AuthContext';
 import { FileDown, CalendarDays, TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function ReportPage() {
-  const { user } = useAuth();
+export default function AdminReportPage() {
   const [transactions, setTransactions] = useState([]);
   const [capital, setCapital] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
-
     const fetchTransactions = async () => {
       try {
-        const res = await fetch(`/api/transactions?userId=${user._id}`);
-        const transactions = await res.json();
-        setTransactions(transactions);
+        const res = await fetch(`/api/transactions`);
+        const data = await res.json();
+        setTransactions(data);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
       }
     };
 
     const fetchCapital = async () => {
-      try{
-        const res = await fetch(`/api/transactions/summary?userId=${user._id}`);
+      try {
+        const res = await fetch(`/api/transactions/summary`);
         const data = await res.json();
-        setCapital(data.capital);
-      }catch(err){
+        setCapital(data.totalCapital); // Total across all users
+      } catch (err) {
         console.error('Failed to fetch capital:', err);
       }
     };
 
     fetchTransactions();
     fetchCapital();
-  }, [user]);
-
+  }, []);
 
   const totalDeposit = transactions
     .filter((t) => t.type === 'deposit' || t.type === 'received')
@@ -45,16 +40,13 @@ export default function ReportPage() {
     .filter((t) => t.type === 'withdrawal' || t.type === 'sent')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const netBalance = totalDeposit - totalWithdraw;
-
   const exportCSV = () => {
-    const header = 'Date,Type,Amount,Source\n';
+    const header = 'Date,Type,Amount,Source,User Email\n';
     const rows = transactions
-      .map(
-        (t) =>
-          `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${
-            t.source || t.title || 'N/A'
-          }`
+      .map((t) =>
+        `${new Date(t.date).toLocaleDateString()},${t.type},${t.amount},${
+          t.source || t.title || 'N/A'
+        },${t.user?.email || 'N/A'}`
       )
       .join('\n');
 
@@ -62,16 +54,15 @@ export default function ReportPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transactions-full.csv`;
+    a.download = `all-transactions.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-8">
-      <div className="text-2xl font-semibold text-[#3cb0c9]">Reports & Export</div>
+      <div className="text-2xl font-semibold text-[#3cb0c9]">Admin Reports & Export</div>
 
-      {/* Export Button Only */}
       <div className="flex justify-end">
         <button
           onClick={exportCSV}
@@ -81,7 +72,6 @@ export default function ReportPage() {
         </button>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-xl border border-[#3cb0c9]/20 shadow-sm">
           <p className="text-gray-600">Total Received</p>
@@ -98,7 +88,7 @@ export default function ReportPage() {
           </div>
         </div>
         <div className="bg-white p-5 rounded-xl border border-[#3cb0c9]/20 shadow-sm">
-          <p className="text-gray-600">Total Balance</p>
+          <p className="text-gray-600">Total Bank Capital</p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-2xl font-bold text-[#3cb0c9]">${capital.toLocaleString()}</span>
             <CalendarDays className="text-[#3cb0c9]" />
@@ -106,9 +96,8 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* Transaction Table */}
       <div className="bg-white border border-[#3cb0c9]/20 p-6 rounded-xl shadow-sm">
-        <h3 className="font-semibold text-[#3cb0c9] mb-4">Transaction History</h3>
+        <h3 className="font-semibold text-[#3cb0c9] mb-4">All Users Transaction History</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
@@ -117,6 +106,7 @@ export default function ReportPage() {
                 <th className="px-4 py-2">Type</th>
                 <th className="px-4 py-2">Amount</th>
                 <th className="px-4 py-2">Source</th>
+                <th className="px-4 py-2">User Email</th>
               </tr>
             </thead>
             <tbody>
@@ -127,11 +117,12 @@ export default function ReportPage() {
                     <td className="px-4 py-2 capitalize">{t.type}</td>
                     <td className="px-4 py-2">${t.amount}</td>
                     <td className="px-4 py-2">{t.source || t.title || 'N/A'}</td>
+                    <td className="px-4 py-2">{t.user?.email || 'N/A'}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="text-center py-4 text-gray-400 italic">
+                  <td colSpan={5} className="text-center py-4 text-gray-400 italic">
                     No transactions found.
                   </td>
                 </tr>

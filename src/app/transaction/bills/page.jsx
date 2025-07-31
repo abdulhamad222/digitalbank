@@ -57,19 +57,17 @@ export default function BillsPage() {
       return;
     }
 
-    // 1. Mark bill as Scheduled
-    setBills(prev =>
-      prev.map(b => b.name === bill.name ? { ...b, status: 'Scheduled' } : b)
-    );
+    try {
+      // 1. Optimistically update the UI
+      setBills(prev =>
+        prev.map(b => b.name === bill.name ? { ...b, status: 'Paid' } : b)
+      );
 
-    // 2. Cut capital immediately
-    setCapital(prev => prev - bill.amount);
-    toast.success(`Paid $${bill.amount} for ${bill.name}`);
+      // 2. Deduct the amount from capital
+      setCapital(prev => prev - bill.amount);
 
-    // 3. After 30 mins
-    setTimeout(async () => {
-      // a. Add transaction to DB
-      await fetch('/api/transactions/send', {
+      // 3. Create a transaction entry
+      const res = await fetch('/api/transactions/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,16 +79,23 @@ export default function BillsPage() {
         }),
       });
 
-      // b. Add money back to capital
-      setCapital(prev => prev + bill.amount);
+      await fetch('/api/bills/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id, name: bill.name }),
+      });
 
-      // c. Reset bill to Pending
+      if (!res.ok) throw new Error();
+
+      toast.success(`$${bill.amount} paid for ${bill.name}`);
+    } catch (err) {
+      toast.error('Payment failed. Please try again.');
+      // Rollback on error
       setBills(prev =>
         prev.map(b => b.name === bill.name ? { ...b, status: 'Pending' } : b)
       );
-
-      toast.success(`${bill.name} bill reset and amount refunded`);
-    }, 1800000); // 30 minutes
+      setCapital(prev => prev + bill.amount);
+    }
   };
 
   const paidBills = bills.filter(b => b.status === 'Paid');
